@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeRefine — AI Code Review Platform</title>
+    <meta name="description"
+        content="AI-powered code review and optimization engine. Get instant, expert-level feedback on your code.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        surface: { 800: '#1e1e2e', 900: '#13131f', 950: '#0d0d17' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        body {
+            background: #0d0d17;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 30, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            transition: all 0.3s;
+        }
+
+        .gradient-btn:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .glow {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+        }
+
+        .score-ring {
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 1.5s ease;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 3px solid #6366f1;
+        }
+
+        .issue-card {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        pre code.hljs {
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .loader-ring {
+            border-top-color: #6366f1;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #13131f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        .tab-active {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .severity-critical {
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .severity-high {
+            border-left: 4px solid #f97316;
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .severity-medium {
+            border-left: 4px solid #eab308;
+            background: rgba(234, 179, 8, 0.05);
+        }
+
+        .severity-low {
+            border-left: 4px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .history-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .bg-grid {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+    </style>
+</head>
+
+<body class="text-gray-100 min-h-screen">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- AUTH PAGE -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="authPage" class="min-h-screen flex items-center justify-center bg-grid relative overflow-hidden">
+        <!-- Background blobs -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl pointer-events-none">
+        </div>
+
+        <div class="glass-card rounded-2xl p-8 w-full max-w-md mx-4 glow animate-fade-in">
+            <!-- Logo -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-btn mb-4">
+                    <i class="fa-solid fa-code text-white text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold gradient-text">CodeRefine</h1>
+                <p class="text-gray-400 mt-1 text-sm">AI-Powered Code Review Platform</p>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="flex rounded-xl overflow-hidden mb-6 glass p-1">
+                <button id="loginTabBtn" onclick="switchAuthTab('login')"
+                    class="flex-1 py-2 text-sm font-medium rounded-lg transition-all tab-active">Sign In</button>
+                <button id="registerTabBtn" onclick="switchAuthTab('register')"
+                    class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-gray-400">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input id="loginEmail" type="email" required placeholder="you@example.com"
+                            class="w-full bg-surface-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input id="loginPassword" type="password" required placeholder="••••••••"
+                            class="w-full bg-surface-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    </div>
+                </div>
+                <div id="loginError"
+                    class="hidden text-red-400 text-xs bg-red-400/10 border border-red-400/20 rounded-lg p-3"></div>
+                <button type="submit" id="loginBtn"
+                    class="gradient-btn w-full py-3 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                </button>
+                <p class="text-center text-xs text-gray-500">Demo: test@demo.com / password123</p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input id="regUsername" type="text" required placeholder="johndoe"
+                            class="w-full bg-surface-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Email Address</label>
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input id="regEmail" type="email" required placeholder="you@example.com"
+                            class="w-full bg-surface-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input id="regPassword" type="password" required placeholder="Min 6 characters"
+                            class="w-full bg-surface-900 border border-gray-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    </div>
+                </div>
+                <div id="registerError"
+                    class="hidden text-red-400 text-xs bg-red-400/10 border border-red-400/20 rounded-lg p-3"></div>
+                <button type="submit" id="registerBtn"
+                    class="gradient-btn w-full py-3 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MAIN APP -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="appPage" class="hidden min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 glass-card flex-shrink-0 flex flex-col border-r border-white/5 fixed h-full z-40">
+            <!-- Logo -->
+            <div class="p-5 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl gradient-btn flex items-center justify-center">
+                        <i class="fa-solid fa-code text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-sm">CodeRefine</h1>
+                        <p class="text-xs text-gray-500">AI Code Platform</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nav -->
+            <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+                <button onclick="showSection('dashboard')" id="nav-dashboard"
+                    class="sidebar-link active w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300">
+                    <i class="fa-solid fa-gauge-high w-4 text-brand-400"></i> Dashboard
+                </button>
+                <button onclick="showSection('review')" id="nav-review"
+                    class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass-chart w-4"></i> Code Review
+                </button>
+                <button onclick="showSection('history')" id="nav-history"
+                    class="sidebar-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400">
+                    <i class="fa-solid fa-clock-rotate-left w-4"></i> History
+                </button>
+
+                <div class="pt-3 pb-1">
+                    <p class="text-xs text-gray-600 uppercase tracking-wider px-3 mb-1">Languages</p>
+                </div>
+                <div class="px-3 py-2 flex flex-wrap gap-1.5">
+                    <span
+                        class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded px-2 py-0.5">Python</span>
+                    <span
+                        class="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded px-2 py-0.5">JavaScript</span>
+                    <span
+                        class="text-xs bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded px-2 py-0.5">Java</span>
+                    <span
+                        class="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded px-2 py-0.5">C++</span>
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-3 border-t border-white/5">
+                <div class="flex items-center gap-3 px-2 py-2">
+                    <div class="w-8 h-8 rounded-full gradient-btn flex items-center justify-center text-xs font-bold text-white"
+                        id="avatarInitial">U</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate" id="sidebarUsername">User</p>
+                        <p class="text-xs text-gray-500 truncate" id="sidebarEmail">user@example.com</p>
+                    </div>
+                    <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 transition-colors"
+                        title="Logout">
+                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 flex flex-col min-h-screen">
+
+            <!-- Top Bar -->
+            <header
+                class="glass-card border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+                <div>
+                    <h2 class="text-lg font-semibold text-white" id="pageTitle">Dashboard</h2>
+                    <p class="text-xs text-gray-500" id="pageSubtitle">Welcome back!</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 glass rounded-lg px-3 py-1.5">
+                        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse-slow"></div>
+                        <span class="text-xs text-gray-400">Groq Connected</span>
+                    </div>
+                    <button onclick="showSection('review')"
+                        class="gradient-btn px-4 py-2 rounded-lg text-sm font-medium text-white flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> New Review
+                    </button>
+                </div>
+            </header>
+
+            <!-- ── DASHBOARD SECTION ── -->
+            <section id="section-dashboard" class="p-6 space-y-6 animate-fade-in">
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-card rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Total Reviews</span>
+                            <div class="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-file-code text-brand-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-3xl font-bold text-white" id="statTotal">—</p>
+                        <p class="text-xs text-gray-500 mt-1">All time</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Avg Quality Score</span>
+                            <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-star text-green-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-3xl font-bold text-white" id="statAvgScore">—</p>
+                        <p class="text-xs text-gray-500 mt-1">Out of 100</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Issues Found</span>
+                            <div class="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-bug text-red-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-3xl font-bold text-white" id="statIssues">—</p>
+                        <p class="text-xs text-gray-500 mt-1">Across all reviews</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs text-gray-500 uppercase tracking-wider">Languages Used</span>
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-purple-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-3xl font-bold text-white" id="statLangs">—</p>
+                        <p class="text-xs text-gray-500 mt-1">Unique languages</p>
+                    </div>
+                </div>
+
+                <!-- Recent Reviews -->
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold text-white">Recent Reviews</h3>
+                        <button onclick="showSection('history')"
+                            class="text-xs text-brand-400 hover:text-brand-300">View all →</button>
+                    </div>
+                    <div id="dashboardRecentList" class="space-y-2">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fa-solid fa-inbox text-3xl mb-2 block text-gray-700"></i>
+                            No reviews yet. <button onclick="showSection('review')"
+                                class="text-brand-400 hover:underline">Start your first review!</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── REVIEW SECTION ── -->
+            <section id="section-review" class="hidden p-6 animate-fade-in">
+                <div class="flex gap-6 h-full">
+                    <!-- Left: Input -->
+                    <div class="w-1/2 flex flex-col gap-4">
+                        <div class="glass-card rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square text-brand-400"></i> Source Code
+                                </h3>
+                                <select id="languageSelect"
+                                    class="bg-surface-900 border border-gray-700 text-gray-300 text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-brand-500">
+                                    <option value="python">🐍 Python</option>
+                                    <option value="javascript">🟨 JavaScript</option>
+                                    <option value="java">☕ Java</option>
+                                    <option value="cpp">⚙️ C++</option>
+                                </select>
+                            </div>
+                            <textarea id="codeInput"
+                                class="w-full h-[520px] bg-surface-950 border border-gray-800 rounded-xl p-4 font-mono text-sm text-gray-200 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors placeholder-gray-700"
+                                placeholder="// Paste your code here...&#10;&#10;function example() {&#10;    // Let the AI find the issues!&#10;}"></textarea>
+                            <div class="flex gap-3 mt-4">
+                                <button id="clearBtn" onclick="clearCode()"
+                                    class="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                                    <i class="fa-solid fa-trash-can"></i> Clear
+                                </button>
+                                <button id="reviewBtn" onclick="handleReview()"
+                                    class="gradient-btn flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze & Optimize
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Output -->
+                    <div class="w-1/2 flex flex-col gap-4">
+                        <!-- Output Tabs -->
+                        <div class="glass-card rounded-xl p-1 flex gap-1">
+                            <button id="tabAnalysis" onclick="switchResultTab('analysis')"
+                                class="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all tab-active">
+                                <i class="fa-solid fa-stethoscope mr-1.5"></i>Analysis
+                            </button>
+                            <button id="tabRefactored" onclick="switchResultTab('refactored')"
+                                class="flex-1 py-2 px-3 rounded-lg text-xs font-medium text-gray-400 hover:text-gray-200 transition-all">
+                                <i class="fa-solid fa-code-compare mr-1.5"></i>Refactored
+                            </button>
+                            <button id="tabImprovements" onclick="switchResultTab('improvements')"
+                                class="flex-1 py-2 px-3 rounded-lg text-xs font-medium text-gray-400 hover:text-gray-200 transition-all">
+                                <i class="fa-solid fa-list-check mr-1.5"></i>Improvements
+                            </button>
+                        </div>
+
+                        <!-- Output Panel -->
+                        <div class="glass-card rounded-xl flex-1 overflow-hidden relative" style="min-height: 560px;">
+
+                            <!-- Placeholder -->
+                            <div id="outputPlaceholder"
+                                class="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
+                                <div class="w-20 h-20 rounded-2xl glass flex items-center justify-center mb-4">
+                                    <i class="fa-solid fa-robot text-4xl text-gray-700"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-500">Ready to Analyze</h3>
+                                <p class="text-sm text-gray-600 mt-2 max-w-xs">Paste your code on the left, select a
+                                    language, and click Analyze.</p>
+                            </div>
+
+                            <!-- Loading -->
+                            <div id="outputLoading"
+                                class="hidden absolute inset-0 flex flex-col items-center justify-center bg-surface-800/90 z-10">
+                                <div class="loader-ring w-12 h-12 border-4 border-gray-700 rounded-full mb-4"></div>
+                                <p class="text-white font-semibold">Analyzing your code...</p>
+                                <p class="text-gray-400 text-sm mt-1">Powered by Llama 3.3 70B via Groq</p>
+                            </div>
+
+                            <!-- Analysis Tab Content -->
+                            <div id="outputAnalysis" class="hidden h-full overflow-y-auto p-5 space-y-4">
+                                <!-- Score + Summary -->
+                                <div class="flex items-center gap-4 glass rounded-xl p-4">
+                                    <div class="relative w-20 h-20 flex-shrink-0">
+                                        <svg class="w-20 h-20 -rotate-90" viewBox="0 0 90 90">
+                                            <circle cx="45" cy="45" r="40" fill="none" stroke="#1e1e2e"
+                                                stroke-width="8" />
+                                            <circle id="scoreRing" cx="45" cy="45" r="40" fill="none" stroke="#6366f1"
+                                                stroke-width="8" stroke-linecap="round" class="score-ring" />
+                                        </svg>
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <span id="scoreValue" class="text-xl font-bold text-white">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p id="overviewText" class="text-sm text-gray-300 leading-relaxed"></p>
+                                        <div class="flex gap-3 mt-3">
+                                            <span
+                                                class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 rounded-full px-2 py-0.5"><span
+                                                    id="cntCritical">0</span> Critical</span>
+                                            <span
+                                                class="text-xs bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full px-2 py-0.5"><span
+                                                    id="cntHigh">0</span> High</span>
+                                            <span
+                                                class="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full px-2 py-0.5"><span
+                                                    id="cntMedium">0</span> Medium</span>
+                                            <span
+                                                class="text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full px-2 py-0.5"><span
+                                                    id="cntLow">0</span> Low</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Issues List -->
+                                <div id="issuesList" class="space-y-3"></div>
+                            </div>
+
+                            <!-- Refactored Tab Content -->
+                            <div id="outputRefactored" class="hidden h-full flex flex-col p-5">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-300">Optimized Code</h4>
+                                    <button id="copyBtn" onclick="copyRefactored()"
+                                        class="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1.5 glass px-3 py-1.5 rounded-lg">
+                                        <i class="fa-regular fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                                <div class="flex-1 overflow-auto rounded-xl">
+                                    <pre><code id="refactoredCode" class="language-python text-xs">// Refactored code will appear here...</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Improvements Tab Content -->
+                            <div id="outputImprovements" class="hidden h-full overflow-y-auto p-5">
+                                <h4 class="text-sm font-semibold text-gray-300 mb-4">Key Improvements Made</h4>
+                                <ul id="improvementsList" class="space-y-3"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── HISTORY SECTION ── -->
+            <section id="section-history" class="hidden p-6 animate-fade-in">
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-5">
+                        <h3 class="font-semibold text-white">Review History</h3>
+                        <span class="text-xs text-gray-500">Last 20 reviews</span>
+                    </div>
+                    <div id="historyList" class="space-y-2">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fa-solid fa-clock-rotate-left text-4xl mb-3 block text-gray-700"></i>
+                            No history yet.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
