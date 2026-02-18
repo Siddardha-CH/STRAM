@@ -1,8 +1,8 @@
-from ai_engine import generate_review
 import re
+from app.core.ai_engine import generate_review
+from app.models.response import RewriteResponse
 
-def rewrite_code(code, language):
-
+def rewrite_code(code: str, language: str) -> RewriteResponse:
     prompt = f"""
 Rewrite this {language} code to be cleaner and optimized.
 Do NOT change logic.
@@ -19,16 +19,14 @@ Code:
     optimized = extract_code(response)
     improvements = extract_improvements(response)
 
-    return {
-        "optimized_code": optimized,
-        "improvements": improvements
-    }
-
+    return RewriteResponse(
+        rewritten_code=optimized,
+        improvements=improvements
+    )
 
 def extract_code(text):
     match = re.search(r"```(.*?)```", text, re.S)
     return match.group(1).strip() if match else ""
-
 
 def extract_improvements(text):
     return [l.strip("- ") for l in text.split("\n") if l.startswith("-")]
