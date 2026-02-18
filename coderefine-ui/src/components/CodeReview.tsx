@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2 } from 'lucide-react';
+import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2, Upload, RefreshCw } from 'lucide-react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { reviewApi } from '../api';
@@ -155,6 +155,34 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const applyRefactored = () => {
+        if (!result?.refactored_code) return;
+        setCode(result.refactored_code);
+        toast.success('Source code updated with refactored version!');
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const content = event.target?.result as string;
+            setCode(content);
+            toast.success(`Loaded ${file.name}`);
+
+            // Auto-detect language if possible
+            const ext = file.name.split('.').pop()?.toLowerCase();
+            if (ext) {
+                if (['py'].includes(ext)) setLanguage('python');
+                else if (['js', 'jsx', 'ts', 'tsx'].includes(ext)) setLanguage('javascript');
+                else if (['java'].includes(ext)) setLanguage('java');
+                else if (['cpp', 'cc', 'h', 'hpp', 'c'].includes(ext)) setLanguage('cpp');
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const tabs: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
         { id: 'analysis', label: 'Analysis', icon: <AlertCircle className="w-3.5 h-3.5" /> },
         { id: 'refactored', label: 'Refactored', icon: <Code2 className="w-3.5 h-3.5" /> },
@@ -190,6 +218,10 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                             className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
                             <Trash2 className="w-4 h-4" /> Clear
                         </button>
+                        <label className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2 cursor-pointer">
+                            <Upload className="w-4 h-4" /> Upload
+                            <input type="file" className="hidden" onChange={handleFileUpload} />
+                        </label>
                         <button onClick={handleReview} disabled={loading}
                             className="gradient-btn flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                             {loading
@@ -287,10 +319,16 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                                     <motion.div key="refactored" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 h-full flex flex-col">
                                         <div className="flex justify-between items-center mb-3">
                                             <h4 className="text-sm font-semibold text-gray-300">Optimized Code</h4>
-                                            <button onClick={copyRefactored}
-                                                className="glass px-3 py-1.5 rounded-lg text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1.5 transition-colors">
-                                                {copied ? <><Check className="w-3.5 h-3.5 text-green-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button onClick={applyRefactored}
+                                                    className="glass px-3 py-1.5 rounded-lg text-xs text-green-400 hover:text-green-300 flex items-center gap-1.5 transition-colors">
+                                                    <RefreshCw className="w-3.5 h-3.5" /> Replace Source
+                                                </button>
+                                                <button onClick={copyRefactored}
+                                                    className="glass px-3 py-1.5 rounded-lg text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1.5 transition-colors">
+                                                    {copied ? <><Check className="w-3.5 h-3.5 text-green-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="flex-1 overflow-auto rounded-xl">
                                             <SyntaxHighlighter language={language} style={atomOneDark}
