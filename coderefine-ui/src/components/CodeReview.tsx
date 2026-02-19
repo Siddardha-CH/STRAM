@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2, Upload, RefreshCw } from 'lucide-react';
+import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2, Upload, RefreshCw, Download } from 'lucide-react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { reviewApi } from '../api';
@@ -19,9 +18,6 @@ const LANGUAGES: { value: Language; label: string; icon: string }[] = [
     { value: 'javascript', label: 'JavaScript', icon: '🟨' },
     { value: 'java', label: 'Java', icon: '☕' },
     { value: 'cpp', label: 'C++', icon: '⚙️' },
-    { value: 'c', label: 'C', icon: '🔵' },
-    { value: 'html', label: 'HTML', icon: '🌐' },
-    { value: 'css', label: 'CSS', icon: '🎨' },
 ];
 
 const SeverityIcon: React.FC<{ severity: string }> = ({ severity }) => {
@@ -151,8 +147,6 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
         }
     };
 
-
-
     const copyRefactored = () => {
         if (!result?.refactored_code) return;
         navigator.clipboard.writeText(result.refactored_code);
@@ -183,15 +177,27 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                 if (['py'].includes(ext)) setLanguage('python');
                 else if (['js', 'jsx', 'ts', 'tsx'].includes(ext)) setLanguage('javascript');
                 else if (['java'].includes(ext)) setLanguage('java');
-                else if (['cpp', 'cc', 'hpp', 'c', 'h'].includes(ext)) {
-                    if (['c', 'h'].includes(ext)) setLanguage('c');
-                    else setLanguage('cpp');
-                }
-                else if (['html', 'htm'].includes(ext)) setLanguage('html');
-                else if (['css'].includes(ext)) setLanguage('css');
+                else if (['cpp', 'cc', 'h', 'hpp', 'c'].includes(ext)) setLanguage('cpp');
             }
         };
         reader.readAsText(file);
+    };
+
+    const handleDownload = () => {
+        if (!result?.refactored_code) return;
+        const blob = new Blob([result.refactored_code], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Determine extension
+        const extMap: Record<string, string> = { python: 'py', javascript: 'js', java: 'java', cpp: 'cpp' };
+        const ext = extMap[language] || 'txt';
+        a.download = `refactored_code.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('Download started!');
     };
 
     const tabs: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
@@ -229,14 +235,10 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                             className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
                             <Trash2 className="w-4 h-4" /> Clear
                         </button>
-
-
                         <label className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2 cursor-pointer">
                             <Upload className="w-4 h-4" /> Upload
-                            <input type="file" className="hidden" onChange={handleFileUpload} accept=".py,.js,.jsx,.ts,.tsx,.java,.cpp,.cc,.c,.h" />
+                            <input type="file" className="hidden" onChange={handleFileUpload} />
                         </label>
-
-
                         <button onClick={handleReview} disabled={loading}
                             className="gradient-btn flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                             {loading
@@ -335,6 +337,10 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                                         <div className="flex justify-between items-center mb-3">
                                             <h4 className="text-sm font-semibold text-gray-300">Optimized Code</h4>
                                             <div className="flex gap-2">
+                                                <button onClick={handleDownload}
+                                                    className="glass px-3 py-1.5 rounded-lg text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition-colors">
+                                                    <Download className="w-3.5 h-3.5" /> Download
+                                                </button>
                                                 <button onClick={applyRefactored}
                                                     className="glass px-3 py-1.5 rounded-lg text-xs text-green-400 hover:text-green-300 flex items-center gap-1.5 transition-colors">
                                                     <RefreshCw className="w-3.5 h-3.5" /> Replace Source

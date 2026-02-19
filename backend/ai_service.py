@@ -34,12 +34,14 @@ The JSON must follow this exact structure:
             "suggestion": "<exact code snippet showing the fix>"
         }}
     ],
-    "refactored_code": "<the complete rewritten code with ALL issues fixed, properly documented>",
+    "refactored_code": "<the complete rewritten code string. DO NOT use Gist links or URLs. MUST be the full code.>",
     "improvements": ["<improvement 1>", "<improvement 2>", "<improvement 3>"]
 }}
 
 Rules:
 - Output ONLY the raw JSON, no markdown code fences.
+- The 'refactored_code' field MUST contain the actual full code.
+- DO NOT return a URL, Gist link, or placeholder like "Click here to view code".
 - Be thorough but accurate. Do not invent issues that don't exist.
 - The refactored_code must be complete and runnable.
 - Score 90-100 for excellent code, 70-89 for good, 50-69 for fair, below 50 for poor.
