@@ -53,9 +53,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuth }) => {
     };
 
     return (
-        <div className="min-h-screen bg-surface-950 bg-grid-pattern flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-grid-pattern flex items-center justify-center p-4 relative overflow-hidden">
             {/* Ambient blobs */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none mix-blend-screen" />
             <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
 

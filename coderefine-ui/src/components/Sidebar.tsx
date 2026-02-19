@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-    Code2, LayoutDashboard, Search, History, LogOut, Zap
+    Code2, LayoutDashboard, Search, History, LogOut
 } from 'lucide-react';
 import type { Section, User } from '../types';
 
@@ -26,12 +26,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
             {/* Logo */}
             <div className="p-5 border-b border-white/5">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl gradient-btn flex items-center justify-center shadow-lg">
-                        <Code2 className="w-5 h-5 text-white" />
+                    <div className="w-9 h-9 rounded-xl gradient-btn flex items-center justify-center shadow-lg group">
+                        <Code2 className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
                     </div>
                     <div>
-                        <h1 className="font-bold text-white text-sm tracking-tight">CodeRefine</h1>
-                        <p className="text-xs text-gray-500">AI Code Platform</p>
+                        <h1 className="font-bold text-lg tracking-tight gradient-text">CodeRefine</h1>
+                        <p className="text-xs text-gray-400 font-medium">AI Code Platform</p>
                     </div>
                 </div>
             </div>
@@ -58,29 +58,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
 
                 {/* Language badges */}
                 <div className="pt-4 pb-1">
-                    <p className="text-xs text-gray-600 uppercase tracking-wider px-3 mb-2">Supported</p>
-                    <div className="px-3 flex flex-wrap gap-1.5">
+                    <p className="text-xs text-gray-500 uppercase tracking-wider px-3 mb-3 font-semibold">Supported</p>
+                    <div className="px-3 flex flex-wrap gap-2">
                         {[
                             { name: 'Python', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
                             { name: 'JS', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
                             { name: 'Java', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
                             { name: 'C++', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+                            { name: 'C', color: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' },
+                            { name: 'HTML', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+                            { name: 'CSS', color: 'bg-blue-600/10 text-blue-500 border-blue-600/20' },
                         ].map(lang => (
-                            <span key={lang.name} className={`text-xs border rounded px-2 py-0.5 ${lang.color}`}>{lang.name}</span>
+                            <span key={lang.name} className={`text-[10px] border rounded-md px-2 py-1 font-medium ${lang.color}`}>{lang.name}</span>
                         ))}
                     </div>
                 </div>
 
-                {/* Powered by */}
-                <div className="px-3 pt-3">
-                    <div className="glass rounded-xl p-3 flex items-center gap-2">
-                        <Zap className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                        <div>
-                            <p className="text-xs font-medium text-gray-300">Groq + Llama 3.3</p>
-                            <p className="text-xs text-gray-600">70B model</p>
-                        </div>
-                    </div>
-                </div>
+
             </nav>
 
             {/* User */}

@@ -76,7 +76,7 @@ function App() {
   return (
     <>
       <Toaster position="top-right" toastOptions={{ style: { background: '#1e1e2e', color: '#e2e8f0', border: '1px solid rgba(99,102,241,0.2)' } }} />
-      <div className="flex min-h-screen bg-surface-950">
+      <div className="flex min-h-screen">
         <Sidebar user={user} activeSection={section} onNavigate={handleNavigate} onLogout={handleLogout} />
 
         {/* Main content */}

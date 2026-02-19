@@ -4,7 +4,7 @@ import type { AuthResponse, ReviewResult, ReviewHistory, Stats, User } from './t
 const api = axios.create({
     baseURL: '/api',
     headers: { 'Content-Type': 'application/json' },
-    timeout: 15000, // 15 second timeout
+    timeout: 60000, // 60 second timeout
 });
 
 // Attach token to every request

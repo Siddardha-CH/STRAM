@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2, Upload } from 'lucide-react';
+
 import { Wand2, Trash2, Copy, Check, ChevronDown, AlertTriangle, AlertCircle, Info, CheckCircle2, ListChecks, Code2, Upload, RefreshCw } from 'lucide-react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
@@ -19,6 +19,9 @@ const LANGUAGES: { value: Language; label: string; icon: string }[] = [
     { value: 'javascript', label: 'JavaScript', icon: '🟨' },
     { value: 'java', label: 'Java', icon: '☕' },
     { value: 'cpp', label: 'C++', icon: '⚙️' },
+    { value: 'c', label: 'C', icon: '🔵' },
+    { value: 'html', label: 'HTML', icon: '🌐' },
+    { value: 'css', label: 'CSS', icon: '🎨' },
 ];
 
 const SeverityIcon: React.FC<{ severity: string }> = ({ severity }) => {
@@ -147,25 +150,8 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
             setLoading(false);
         }
     };
-    
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const content = event.target?.result as string;
-            setCode(content);
-            
-            // Simple extension detection
-            const ext = file.name.split('.').pop()?.toLowerCase();
-            if (ext === 'py') setLanguage('python');
-            else if (['js', 'jsx', 'ts', 'tsx'].includes(ext || '')) setLanguage('javascript');
-            else if (ext === 'java') setLanguage('java');
-            else if (['cpp', 'cc', 'cxx', 'c', 'h'].includes(ext || '')) setLanguage('cpp');
-        };
-        reader.readAsText(file);
-    };
+
 
     const copyRefactored = () => {
         if (!result?.refactored_code) return;
@@ -197,7 +183,12 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                 if (['py'].includes(ext)) setLanguage('python');
                 else if (['js', 'jsx', 'ts', 'tsx'].includes(ext)) setLanguage('javascript');
                 else if (['java'].includes(ext)) setLanguage('java');
-                else if (['cpp', 'cc', 'h', 'hpp', 'c'].includes(ext)) setLanguage('cpp');
+                else if (['cpp', 'cc', 'hpp', 'c', 'h'].includes(ext)) {
+                    if (['c', 'h'].includes(ext)) setLanguage('c');
+                    else setLanguage('cpp');
+                }
+                else if (['html', 'htm'].includes(ext)) setLanguage('html');
+                else if (['css'].includes(ext)) setLanguage('css');
             }
         };
         reader.readAsText(file);
@@ -239,17 +230,13 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                             <Trash2 className="w-4 h-4" /> Clear
                         </button>
 
-                        
+
                         <label className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2 cursor-pointer">
                             <Upload className="w-4 h-4" /> Upload
                             <input type="file" className="hidden" onChange={handleFileUpload} accept=".py,.js,.jsx,.ts,.tsx,.java,.cpp,.cc,.c,.h" />
                         </label>
 
-=======
-                        <label className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2 cursor-pointer">
-                            <Upload className="w-4 h-4" /> Upload
-                            <input type="file" className="hidden" onChange={handleFileUpload} />
-                        </label>
+
                         <button onClick={handleReview} disabled={loading}
                             className="gradient-btn flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                             {loading

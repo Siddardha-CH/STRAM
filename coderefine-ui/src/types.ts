@@ -60,6 +60,6 @@ export interface Stats {
     languages: Record<string, number>;
 }
 
-export type Language = 'python' | 'javascript' | 'java' | 'cpp';
+export type Language = 'python' | 'javascript' | 'java' | 'cpp' | 'c' | 'html' | 'css';
 export type Section = 'dashboard' | 'review' | 'history';
 export type ResultTab = 'analysis' | 'refactored' | 'improvements';
