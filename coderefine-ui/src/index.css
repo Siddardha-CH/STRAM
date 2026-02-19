@@ -1,23 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  /* Electric Violet / Fuchsia Brand Colors */
+  /* Cosmic Night Theme */
   --color-brand-50: #f5f3ff;
   --color-brand-100: #ede9fe;
   --color-brand-200: #ddd6fe;
   --color-brand-300: #c4b5fd;
   --color-brand-400: #a78bfa;
   --color-brand-500: #8b5cf6;
+  /* Vivid Violet */
   --color-brand-600: #7c3aed;
   --color-brand-700: #6d28d9;
   --color-brand-800: #5b21b6;
   --color-brand-900: #4c1d95;
+  --color-brand-950: #2e1065;
 
-  /* Deep Space Backgrounds */
-  --color-surface-800: #1e1b4b; /* indigo-950 */
-  --color-surface-850: #17153b; 
-  --color-surface-900: #0f0c29;
-  --color-surface-950: #02020a; /* almost black */
+  --color-accent-400: #22d3ee;
+  /* Cyan for highlights */
+  --color-accent-500: #06b6d4;
+
+  /* Rich Dark Backgrounds */
+  --color-surface-800: #1e1b4b;
+  /* Deep Indigo Tint */
+  --color-surface-850: #17153b;
+  --color-surface-900: #0f0e24;
+  --color-surface-950: #05050A;
+  /* Almost Pure Black */
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -34,9 +42,9 @@
 
   body {
     background-color: #02020a;
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(217, 70, 239, 0.08), transparent 25%);
+    background-image:
+      radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(217, 70, 239, 0.08), transparent 25%);
     background-attachment: fixed;
     color: #e2e8f0;
     font-family: var(--font-sans);
@@ -47,19 +55,23 @@
     width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: #02020a;
   }
+
   ::-webkit-scrollbar-thumb {
     background: #4c1d95;
     border-radius: 3px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: #7c3aed;
   }
 }
 
 @layer components {
+
   /* Premium Glassmorphism */
   .glass {
     background: rgba(255, 255, 255, 0.03);
@@ -76,39 +88,34 @@
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #a78bfa, #f0abfc, #2dd4bf);
+    background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradient-shift 8s ease infinite;
-    background-size: 200% 200%;
+    filter: drop-shadow(0 0 20px rgba(167, 139, 250, 0.3));
   }
 
   .gradient-btn {
-    background: linear-gradient(135deg, #7c3aed, #db2777);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
     position: relative;
     overflow: hidden;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .gradient-btn::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    inset: 0;
+    background: linear-gradient(135deg, #6d28d9, #0891b2);
+    z-index: -1;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
-  }
-  
-  .gradient-btn > * {
-    position: relative;
-    z-index: 2;
+    transition: opacity 0.4s ease;
   }
 
   .gradient-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.5);
   }
 
   .gradient-btn:hover::before {
@@ -120,7 +127,7 @@
   }
 
   .glow-brand {
-    box-shadow: 0 0 60px rgba(124, 58, 237, 0.15);
+    box-shadow: 0 0 50px -10px rgba(124, 58, 237, 0.3);
   }
 
   /* Severity Badges */
@@ -153,7 +160,8 @@
   }
 
   .nav-link:hover {
-    background: rgba(139, 92, 246, 0.08); /* brand-500 */
+    background: rgba(139, 92, 246, 0.08);
+    /* brand-500 */
     color: #e2e8f0;
   }
 
@@ -190,9 +198,9 @@
   }
 
   .bg-grid-pattern {
-    background-image: 
-        linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    background-image:
+      linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
@@ -202,12 +210,8 @@
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  
-  @keyframes gradient-shift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    to {
+      transform: rotate(360deg);
+    }
   }
 }

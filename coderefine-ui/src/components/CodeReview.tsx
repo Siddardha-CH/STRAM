@@ -22,20 +22,20 @@ const LANGUAGES: { value: Language; label: string; icon: string }[] = [
 
 const SeverityIcon: React.FC<{ severity: string }> = ({ severity }) => {
     const s = severity.toLowerCase();
-    if (s === 'critical') return <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />;
-    if (s === 'high') return <AlertCircle className="w-4 h-4 text-orange-400 flex-shrink-0" />;
-    if (s === 'medium') return <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0" />;
-    return <Info className="w-4 h-4 text-blue-400 flex-shrink-0" />;
+    if (s === 'critical') return <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]" />;
+    if (s === 'high') return <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]" />;
+    if (s === 'medium') return <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />;
+    return <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />;
 };
 
 const severityBadge = (s: string) => {
     const m: Record<string, string> = {
-        critical: 'bg-red-500/10 text-red-400 border border-red-500/20',
-        high: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+        critical: 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_-5px_rgba(239,68,68,0.4)]',
+        high: 'bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-[0_0_15px_-5px_rgba(249,115,22,0.4)]',
         medium: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
         low: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
     };
-    return m[s.toLowerCase()] ?? 'bg-gray-700 text-gray-400';
+    return m[s.toLowerCase()] ?? 'bg-surface-800 text-gray-400';
 };
 
 const IssueCard: React.FC<{ issue: Issue; language: string; index: number }> = ({ issue, language, index }) => {
@@ -45,19 +45,21 @@ const IssueCard: React.FC<{ issue: Issue; language: string; index: number }> = (
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className={`severity-${issue.severity.toLowerCase()} rounded-xl overflow-hidden`}
+            className={`rounded-xl overflow-hidden border border-white/5 bg-surface-900/40 backdrop-blur-sm transition-all hover:border-white/10 ${expanded ? 'ring-1 ring-brand-500/30' : ''}`}
         >
-            <button onClick={() => setExpanded(!expanded)} className="w-full flex items-start gap-3 p-4 text-left hover:bg-white/5 transition-colors">
+            <button onClick={() => setExpanded(!expanded)} className="w-full flex items-start gap-4 p-4 text-left hover:bg-white/5 transition-colors group">
                 <SeverityIcon severity={issue.severity} />
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-white">{issue.title}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${severityBadge(issue.severity)}`}>{issue.severity}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-700/50 text-gray-400">{issue.category}</span>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-sm font-bold text-white group-hover:text-brand-200 transition-colors">{issue.title}</span>
+                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${severityBadge(issue.severity)}`}>{issue.severity}</span>
                     </div>
-                    {issue.line_hint && <p className="text-xs text-gray-500 mt-0.5">📍 {issue.line_hint}</p>}
+                    <div className="flex items-center gap-2 text-xs text-brand-200/50">
+                        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5">{issue.category}</span>
+                        {issue.line_hint && <span className="flex items-center gap-1"><Code2 className="w-3 h-3" /> {issue.line_hint}</span>}
+                    </div>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-300 ${expanded ? 'rotate-180 text-brand-400' : ''}`} />
             </button>
             <AnimatePresence>
                 {expanded && (
@@ -66,17 +68,19 @@ const IssueCard: React.FC<{ issue: Issue; language: string; index: number }> = (
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
+                        className="overflow-hidden bg-black/20"
                     >
-                        <div className="px-4 pb-4 space-y-3">
-                            <p className="text-sm text-gray-300 leading-relaxed">{issue.description}</p>
+                        <div className="px-4 pb-4 pt-2 space-y-4">
+                            <p className="text-sm text-gray-300 leading-relaxed pl-9 border-l-2 border-white/10">{issue.description}</p>
                             {issue.suggestion && (
-                                <div>
-                                    <p className="text-xs text-gray-500 mb-1.5 font-medium">Suggested Fix:</p>
-                                    <SyntaxHighlighter language={language} style={atomOneDark}
-                                        customStyle={{ borderRadius: '0.5rem', fontSize: '0.75rem', margin: 0 }}>
-                                        {issue.suggestion}
-                                    </SyntaxHighlighter>
+                                <div className="pl-9">
+                                    <p className="text-xs text-green-400 mb-2 font-bold uppercase tracking-wider flex items-center gap-1.5"><Wand2 className="w-3 h-3" /> Suggested Fix</p>
+                                    <div className="rounded-lg overflow-hidden border border-white/10 shadow-lg">
+                                        <SyntaxHighlighter language={language} style={atomOneDark}
+                                            customStyle={{ fontSize: '0.8rem', margin: 0, padding: '1rem', background: '#05050A' }}>
+                                            {issue.suggestion}
+                                        </SyntaxHighlighter>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -90,28 +94,29 @@ const IssueCard: React.FC<{ issue: Issue; language: string; index: number }> = (
 const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
     const circumference = 251.2;
     const offset = circumference - (score / 100) * circumference;
-    const color = score >= 80 ? '#22c55e' : score >= 60 ? '#eab308' : '#ef4444';
+    const color = score >= 80 ? '#22c55e' : score >= 60 ? '#eab308' : '#f43f5e';
 
     return (
-        <div className="relative w-24 h-24 flex-shrink-0">
-            <svg className="w-24 h-24 -rotate-90" viewBox="0 0 90 90">
-                <circle cx="45" cy="45" r="40" fill="none" stroke="#1e1e2e" strokeWidth="8" />
+        <div className="relative w-28 h-28 flex-shrink-0">
+            <svg className="w-28 h-28 -rotate-90 drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]" viewBox="0 0 90 90">
+                <circle cx="45" cy="45" r="40" fill="none" stroke="#1e1b4b" strokeWidth="6" />
                 <motion.circle
-                    cx="45" cy="45" r="40" fill="none" stroke={color} strokeWidth="8"
+                    cx="45" cy="45" r="40" fill="none" stroke={color} strokeWidth="6"
                     strokeLinecap="round"
                     initial={{ strokeDashoffset: circumference }}
                     animate={{ strokeDashoffset: offset }}
                     transition={{ duration: 1.5, ease: 'easeOut' }}
-                    style={{ strokeDasharray: circumference }}
+                    style={{ strokeDasharray: circumference, filter: `drop-shadow(0 0 8px ${color})` }}
                 />
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center flex-col">
                 <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="text-2xl font-bold text-white"
+                    className="text-3xl font-black text-white"
                 >{score}</motion.span>
+                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Score</span>
             </div>
         </div>
     );
@@ -210,37 +215,39 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
         <div className="p-6 flex gap-6 h-full" style={{ minHeight: 'calc(100vh - 73px)' }}>
             {/* Left: Input */}
             <div className="w-1/2 flex flex-col gap-4">
-                <div className="glass-card rounded-2xl p-5 flex flex-col flex-1">
+                <div className="glass-card rounded-2xl p-5 flex flex-col flex-1 border-white/5 shadow-2xl shadow-black/20">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-white flex items-center gap-2">
-                            <Code2 className="w-4 h-4 text-brand-400" /> Source Code
+                        <h3 className="font-bold text-white flex items-center gap-2">
+                            <Code2 className="w-5 h-5 text-brand-400" /> Source Code
                         </h3>
-                        <div className="relative">
+                        <div className="relative group">
                             <select value={language} onChange={e => setLanguage(e.target.value as Language)}
-                                className="input-field text-xs rounded-lg px-3 py-1.5 pr-7 appearance-none cursor-pointer">
+                                className="input-field text-xs rounded-lg pl-3 pr-8 py-2 appearance-none cursor-pointer bg-surface-900/50 hover:bg-surface-800 transition-colors border-white/10 font-medium text-brand-100">
                                 {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.icon} {l.label}</option>)}
                             </select>
-                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-brand-400 pointer-events-none group-hover:text-accent-400 transition-colors" />
                         </div>
                     </div>
-                    <textarea
-                        value={code}
-                        onChange={e => setCode(e.target.value)}
-                        className="flex-1 bg-surface-950 border border-gray-800 rounded-xl p-4 font-mono text-sm text-gray-200 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none transition-colors placeholder-gray-700 min-h-[480px]"
-                        placeholder={`// Paste your ${language} code here...\n\nfunction example() {\n    // Let the AI find the issues!\n}`}
-                        spellCheck={false}
-                    />
+                    <div className="flex-1 relative rounded-xl overflow-hidden ring-1 ring-white/10 group-focus-within:ring-brand-500/50 transition-all">
+                        <textarea
+                            value={code}
+                            onChange={e => setCode(e.target.value)}
+                            className="absolute inset-0 w-full h-full bg-[#05050A] p-4 font-mono text-sm text-gray-300 focus:outline-none resize-none transition-colors placeholder-gray-700 leading-relaxed"
+                            placeholder={`// Paste your ${language} code here...\n\nfunction example() {\n    // Let the AI find the issues!\n}`}
+                            spellCheck={false}
+                        />
+                    </div>
                     <div className="flex gap-3 mt-4">
                         <button onClick={() => { setCode(''); setResult(null); }}
-                            className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                            className="glass px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all flex items-center gap-2">
                             <Trash2 className="w-4 h-4" /> Clear
                         </button>
-                        <label className="glass px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2 cursor-pointer">
+                        <label className="glass px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-brand-300 hover:bg-brand-500/10 hover:border-brand-500/20 transition-all flex items-center gap-2 cursor-pointer">
                             <Upload className="w-4 h-4" /> Upload
                             <input type="file" className="hidden" onChange={handleFileUpload} />
                         </label>
                         <button onClick={handleReview} disabled={loading}
-                            className="gradient-btn flex-1 py-2.5 rounded-xl font-semibold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                            className="gradient-btn flex-1 py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-brand-500/20">
                             {loading
                                 ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full loader-spin" /> Analyzing...</>
                                 : <><Wand2 className="w-4 h-4" /> Analyze & Optimize</>
@@ -295,21 +302,22 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                             <AnimatePresence mode="wait">
                                 {/* Analysis Tab */}
                                 {activeTab === 'analysis' && (
-                                    <motion.div key="analysis" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 space-y-4">
+                                    <motion.div key="analysis" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5 space-y-6">
                                         {/* Score + Summary */}
-                                        <div className="glass rounded-2xl p-4 flex items-center gap-4">
+                                        <div className="glass rounded-2xl p-6 flex items-center gap-6 border-brand-500/10 bg-gradient-to-br from-white/5 to-transparent">
                                             <ScoreRing score={result.summary.score} />
                                             <div className="flex-1">
-                                                <p className="text-sm text-gray-300 leading-relaxed">{result.summary.overview}</p>
-                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                <h3 className="text-xl font-bold text-white mb-2">Analysis Summary</h3>
+                                                <p className="text-sm text-brand-100/80 leading-relaxed mb-4">{result.summary.overview}</p>
+                                                <div className="flex flex-wrap gap-2">
                                                     {[
                                                         { label: 'Critical', count: result.summary.critical, color: 'bg-red-500/10 text-red-400 border-red-500/20' },
                                                         { label: 'High', count: result.summary.high, color: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
                                                         { label: 'Medium', count: result.summary.medium, color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
                                                         { label: 'Low', count: result.summary.low, color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
                                                     ].map(s => (
-                                                        <span key={s.label} className={`text-xs px-2.5 py-1 rounded-full border ${s.color}`}>
-                                                            {s.count} {s.label}
+                                                        <span key={s.label} className={`text-xs px-3 py-1 rounded-full border ${s.color} font-medium tracking-wide`}>
+                                                            <strong className="mr-1">{s.count}</strong> {s.label}
                                                         </span>
                                                     ))}
                                                 </div>
@@ -364,9 +372,11 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                                 {/* Improvements Tab */}
                                 {activeTab === 'improvements' && (
                                     <motion.div key="improvements" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-5">
-                                        <h4 className="text-sm font-semibold text-gray-300 mb-4">Key Improvements Made</h4>
+                                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <ListChecks className="w-4 h-4 text-brand-400" /> Key Improvements Made
+                                        </h4>
                                         {result.improvements.length === 0 ? (
-                                            <p className="text-gray-500 text-sm">No specific improvements listed.</p>
+                                            <p className="text-gray-500 text-sm italic">No specific improvements listed.</p>
                                         ) : (
                                             <ul className="space-y-3">
                                                 {result.improvements.map((imp, i) => (
@@ -374,10 +384,10 @@ export const CodeReview: React.FC<CodeReviewProps> = ({ initialCode = '', initia
                                                         initial={{ opacity: 0, x: -10 }}
                                                         animate={{ opacity: 1, x: 0 }}
                                                         transition={{ delay: i * 0.06 }}
-                                                        className="flex items-start gap-3 glass rounded-xl p-3.5"
+                                                        className="flex items-start gap-3 glass rounded-xl p-4 border-white/5 hover:bg-white/5 transition-colors"
                                                     >
-                                                        <span className="w-6 h-6 rounded-full gradient-btn flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">{i + 1}</span>
-                                                        <span className="text-sm text-gray-300 leading-relaxed">{imp}</span>
+                                                        <span className="w-6 h-6 rounded-lg bg-brand-500/10 text-brand-300 border border-brand-500/20 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 shadow-sm">{i + 1}</span>
+                                                        <span className="text-sm text-gray-200 leading-relaxed">{imp}</span>
                                                     </motion.li>
                                                 ))}
                                             </ul>

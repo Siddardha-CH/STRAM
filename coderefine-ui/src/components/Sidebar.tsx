@@ -42,7 +42,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
                     <button
                         key={item.id}
                         onClick={() => onNavigate(item.id)}
-                        className={`nav-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${activeSection === item.id ? 'active' : 'text-gray-400'
+                        className={`nav-link w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${activeSection === item.id
+                            ? 'bg-brand-500/10 text-brand-300 border-l-[3px] border-brand-500 shadow-[0_0_20px_-5px_rgba(124,58,237,0.3)]'
+                            : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                             }`}
                     >
                         {item.icon}
@@ -50,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
                         {activeSection === item.id && (
                             <motion.div
                                 layoutId="nav-indicator"
-                                className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-400"
+                                className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-400 shadow-[0_0_10px_currentColor]"
                             />
                         )}
                     </button>
@@ -58,8 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
 
                 {/* Language badges */}
                 <div className="pt-4 pb-1">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider px-3 mb-3 font-semibold">Supported</p>
-                    <div className="px-3 flex flex-wrap gap-2">
+                    <p className="text-xs text-brand-300 uppercase tracking-wider px-3 mb-2 font-semibold">Supported</p>
+                    <div className="px-3 flex flex-wrap gap-1.5">
                         {[
                             { name: 'Python', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
                             { name: 'JS', color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
@@ -69,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, activeSection, onNavigat
                             { name: 'HTML', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
                             { name: 'CSS', color: 'bg-blue-600/10 text-blue-500 border-blue-600/20' },
                         ].map(lang => (
-                            <span key={lang.name} className={`text-[10px] border rounded-md px-2 py-1 font-medium ${lang.color}`}>{lang.name}</span>
+                            <span key={lang.name} className={`text-[10px] font-mono border rounded px-2 py-0.5 ${lang.color} backdrop-blur-sm`}>{lang.name}</span>
                         ))}
                     </div>
                 </div>

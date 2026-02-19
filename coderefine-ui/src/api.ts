@@ -18,7 +18,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (res) => res,
     (err) => {
-        if (err.response?.status === 401) {
+        // Don't redirect if it's a login failure (invalid credentials)
+        if (err.response?.status === 401 && !err.config.url.includes('/auth/login')) {
             localStorage.removeItem('cr_token');
             localStorage.removeItem('cr_user');
             window.location.reload();
