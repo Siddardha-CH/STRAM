@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import {
-    Code2, LayoutDashboard, Search, History, LogOut
+    Code2, LayoutDashboard, Search, History, LogOut, ArrowRightLeft
 } from 'lucide-react';
 import type { Section, User } from '../types';
 
@@ -15,6 +15,7 @@ interface SidebarProps {
 const navItems: { id: Section; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: 'review', label: 'Code Review', icon: <Search className="w-4 h-4" /> },
+    { id: 'converter', label: 'Code Converter', icon: <ArrowRightLeft className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <History className="w-4 h-4" /> },
 ];
 

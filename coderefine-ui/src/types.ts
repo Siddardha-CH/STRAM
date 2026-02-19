@@ -60,6 +60,17 @@ export interface Stats {
     languages: Record<string, number>;
 }
 
+export interface ConversionResult {
+    converted_code: string;
+    complexity_analysis: {
+        original_time: string;
+        original_space: string;
+        new_time: string;
+        new_space: string;
+    };
+    explanation: string;
+}
+
 export type Language = 'python' | 'javascript' | 'java' | 'cpp' | 'c' | 'html' | 'css';
-export type Section = 'dashboard' | 'review' | 'history';
+export type Section = 'dashboard' | 'review' | 'history' | 'converter';
 export type ResultTab = 'analysis' | 'refactored' | 'improvements';

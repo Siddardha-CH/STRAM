@@ -85,3 +85,52 @@ def _error_response(message: str) -> dict:
         "refactored_code": "// Error: Could not generate refactored code.",
         "improvements": []
     }
+
+
+def convert_code(code: str, target_language: str) -> dict:
+    """Converts code to target language with optimization."""
+    system_prompt = f"""You are an expert Senior Software Engineer.
+Convert the provided code to {target_language}.
+Optimize the code for time and space complexity where possible.
+
+Return STRICTLY valid JSON with this structure:
+{{
+    "converted_code": "<the full converted code as a string>",
+    "complexity_analysis": {{
+        "original_time": "<estimated time complexity of original>",
+        "original_space": "<estimated space complexity of original>",
+        "new_time": "<estimated time complexity of new code>",
+        "new_space": "<estimated space complexity of new code>"
+    }},
+    "explanation": "<brief explanation of changes and optimizations>"
+}}
+
+Rules:
+- Output ONLY the raw JSON.
+- Ensure the converted code is idiomatic {target_language}.
+- If the code is already optimal, maintain the logic but ensure correct syntax.
+"""
+    user_prompt = f"Convert this code to {target_language} and optimize it:\n\n{code}"
+
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            model=MODEL,
+            temperature=0.1,
+            response_format={"type": "json_object"},
+            max_tokens=4096,
+        )
+        return json.loads(chat_completion.choices[0].message.content)
+    except Exception as e:
+        print(f"Groq API error (convert): {e}")
+        return {
+            "converted_code": f"// Error converting code: {str(e)}",
+            "complexity_analysis": {
+                "original_time": "N/A", "original_space": "N/A",
+                "new_time": "N/A", "new_space": "N/A"
+            },
+            "explanation": "Conversion failed due to an error."
+        }

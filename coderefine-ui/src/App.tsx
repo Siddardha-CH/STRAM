@@ -5,6 +5,7 @@ import { AuthPage } from './components/AuthPage';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { CodeReview } from './components/CodeReview';
+import { CodeConverter } from './components/CodeConverter';
 import { History } from './components/History';
 import { reviewApi } from './api';
 import type { AuthResponse, Section, ReviewResult, User } from './types';
@@ -61,6 +62,7 @@ function App() {
   const PAGE_TITLES: Record<Section, { title: string; subtitle: string }> = {
     dashboard: { title: 'Dashboard', subtitle: 'Your code quality overview' },
     review: { title: 'Code Review', subtitle: 'Analyze and optimize your code with AI' },
+    converter: { title: 'Code Converter', subtitle: 'Translate and optimize code complexity' },
     history: { title: 'Review History', subtitle: 'All your past code reviews' },
   };
 
@@ -106,6 +108,11 @@ function App() {
               {section === 'review' && (
                 <motion.div key="review" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                   <CodeReview initialCode={reviewCode} initialLanguage={reviewLanguage} initialResult={reviewResult} />
+                </motion.div>
+              )}
+              {section === 'converter' && (
+                <motion.div key="converter" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                  <CodeConverter />
                 </motion.div>
               )}
               {section === 'history' && (

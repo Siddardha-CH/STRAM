@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, ReviewResult, ReviewHistory, Stats, User } from './types';
+import type { AuthResponse, ReviewResult, ReviewHistory, Stats, User, ConversionResult } from './types';
 
 const api = axios.create({
     baseURL: '/api',
@@ -47,4 +47,9 @@ export const reviewApi = {
         api.delete(`/reviews/${id}`).then(r => r.data),
     stats: () =>
         api.get<Stats>('/stats').then(r => r.data),
+};
+
+export const converterApi = {
+    convert: (code: string, target_language: string) =>
+        api.post<ConversionResult>('/convert', { code, target_language }).then(r => r.data),
 };

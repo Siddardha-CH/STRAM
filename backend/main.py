@@ -250,5 +250,25 @@ async def get_stats(
         "languages": languages
     }
 
+# ─── Converter Endpoints ──────────────────────────────────────────────────────
+
+class CodeConversion(BaseModel):
+    code: str
+    target_language: str
+    source_language: Optional[str] = None
+
+@app.post("/api/convert")
+async def convert_code_endpoint(
+    conversion: CodeConversion,
+    current_user: User = Depends(get_current_user)
+):
+    from ai_service import convert_code
+    
+    if not conversion.code.strip():
+        raise HTTPException(status_code=400, detail="Code cannot be empty")
+        
+    result = convert_code(conversion.code, conversion.target_language)
+    return result
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

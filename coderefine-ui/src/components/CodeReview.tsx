@@ -18,6 +18,9 @@ const LANGUAGES: { value: Language; label: string; icon: string }[] = [
     { value: 'javascript', label: 'JavaScript', icon: '🟨' },
     { value: 'java', label: 'Java', icon: '☕' },
     { value: 'cpp', label: 'C++', icon: '⚙️' },
+    { value: 'c', label: 'C', icon: '🔵' },
+    { value: 'html', label: 'HTML', icon: '🌐' },
+    { value: 'css', label: 'CSS', icon: '🎨' },
 ];
 
 const SeverityIcon: React.FC<{ severity: string }> = ({ severity }) => {
