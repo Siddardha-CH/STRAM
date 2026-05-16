@@ -1,7 +1,7 @@
 # Start Backend and Frontend for CodeRefine
 
-$backendPath = "d:\hck\STRAM\backend"
-$frontendPath = "d:\hck\STRAM\coderefine-ui"
+$backendPath = "d:\hackathon\STRAM\backend"
+$frontendPath = "d:\hackathon\STRAM\coderefine-ui"
 
 Write-Host "Starting CodeRefine..." -ForegroundColor Cyan
 
